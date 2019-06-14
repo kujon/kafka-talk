@@ -1,0 +1,24 @@
+{
+  "name": "kafka-talk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "mdx-deck deck.mdx",
+    "build": "mdx-deck build deck.mdx",
+    "help": "mdx-deck"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kujon/kafka-talk.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kujon/kafka-talk/issues"
+  },
+  "homepage": "https://github.com/kujon/kafka-talk#readme",
+  "dependencies": {
+    "mdx-deck": "^2.3.2"
+  }
+}
