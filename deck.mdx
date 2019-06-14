@@ -85,7 +85,7 @@ import { Appear } from "@mdx-deck/components";
 
 ## Consumer offsets
 
-#### The amount of messages consumed
+#### The amount of messages consumed per consumer
 
 ```bash
 > tail -n 1 -f my_topic
@@ -125,6 +125,10 @@ import { Appear } from "@mdx-deck/components";
 > echo "baz" >> my_other_topic/1
 ```
 
+---
+
+## Demo part 2
+
 #### Consumer
 
 ##### Individual consumers
@@ -160,7 +164,7 @@ import { Appear } from "@mdx-deck/components";
 
 <Appear>
 
-#### Each message is an arbitrary sequence of bytes
+#### Each message (and key) is an arbitrary sequence of bytes
 
 #### Producers and Consumers are in charge of serialising messages into and deserialising them out of bytes (SerDe).
 
@@ -203,7 +207,7 @@ done
 
 #### Putting followers on different machines (brokers) than leaders.
 
-#### If a machine goes down, one of the followers becomes the leader `LeaderElection`.
+#### If a machine goes down, one of the followers becomes the leader :point_right: `LeaderElection`.
 
 </Appear>
 
