@@ -4,11 +4,11 @@ import { Appear } from "@mdx-deck/components";
 
 ---
 
-## What is streaming?
+## What is stream processing?
 
 <Appear>
 
-### processing of infinite lists, one element at the time
+#### processing of infinite lists, one element at the time
 
 </Appear>
 
@@ -18,9 +18,9 @@ import { Appear } from "@mdx-deck/components";
 
 <Appear>
 
-### 1. Real-time, low latency
+#### 1. Real-time, low latency
 
-### 2. Feasible to process data _much_ _much_ larger than available memory
+#### 2. Feasible to process data _much_ _much_ larger than available memory
 
 </Appear>
 
@@ -30,19 +30,21 @@ import { Appear } from "@mdx-deck/components";
 
 <Appear>
 
-### It's a Streaming Platform
+#### It's a Streaming Platform
 
-#### 1. Kafka proper
+##### 1. Kafka proper - messaging and persistence
 
-#### 2. Kafka Streams
+##### 2. Kafka Streams - stateful stream processing
 
-#### 3. Kafka Connect
+##### 3. Kafka Connect - glue to get data into and out of Kafka
 
-#### 4. Schema Registry
+##### 4. Schema Registry - where all your data contracts live
 
-#### 5. Mirror Maker
+##### 5. Mirror Maker - replicator of topics across clusters
 
-#### 6. ... and more ...
+##### 6. REST Proxy - REST API to consume from Kafka
+
+##### 7. ... and more ...
 
 </Appear>
 
@@ -52,10 +54,225 @@ import { Appear } from "@mdx-deck/components";
 
 <Appear>
 
-### Fancy way of sequentially writing to and reading from a file over the network.
+#### Fancy way of sequentially writing to and reading from a file (log) over the network.
 
 </Appear>
 
 ---
 
 ## Demo
+
+#### Creating a file
+
+```bash
+> touch my_topic
+```
+
+#### Writing (producing)
+
+```bash
+> echo "foo" >> my_topic
+> echo "bar" >> my_topic
+```
+
+#### Reading (consuming)
+
+```bash
+> tail -f my_topic
+```
+
+---
+
+## Consumer offsets
+
+#### The amount of messages consumed
+
+```bash
+> tail -n 1 -f my_topic
+```
+
+<!-- ---
+
+![Offsets](https://kafka.apache.org/22/images/log_consumer.png) -->
+
+---
+
+## Partitions
+
+<Appear>
+
+#### A way of parallelising reads and writes
+
+</Appear>
+
+---
+
+## Demo
+
+#### Create a topic with multiple Partitions
+
+```bash
+> mkdir my_other_topic
+> touch my_other_topic/1
+> touch my_other_topic/2
+```
+
+#### Producer
+
+```bash
+> echo "foo" >> my_other_topic/1
+> echo "bar" >> my_other_topic/2
+> echo "baz" >> my_other_topic/1
+```
+
+#### Consumer
+
+##### Individual consumers
+
+```bash
+> tail -f my_other_topic/*
+```
+
+##### Consumer groups
+
+```bash
+> tail -f my_other_topic/1
+> tail -f my_other_topic/2
+```
+
+---
+
+## Keys
+
+<Appear>
+
+#### In reality, apart from value, each message also has a key.
+
+#### Producer creates the key however they wish.
+
+#### Messages with the same keys end up on the same partitions.
+
+</Appear>
+
+---
+
+## Notice that we never defined a schema
+
+<Appear>
+
+#### Each message is an arbitrary sequence of bytes
+
+#### Producers and Consumers are in charge of serialising messages into and deserialising them out of bytes (SerDe).
+
+</Appear>
+
+---
+
+## Replication
+
+<Appear>
+
+#### Keeping at least one extra copy of each partition
+
+#### Primary copy :point_right: leader - handles all the writes and reads
+
+#### Seconary copies :point_right: followers - are kept in-sync on standby
+
+#### Number of leader + followers governed by the `replication` factor.
+
+#### `ReplicaFetcherThreads` responsible
+
+</Appear>
+
+---
+
+## Demo
+
+```bash
+> while inotifywait -r -e modify,create,delete /directory; do \
+    rsync -avz /my_other_topic/1 /my_other_topic/1_2 \
+    rsync -avz /my_other_topic/2 /my_other_topic/2_2 \
+done
+```
+
+---
+
+## Distribution
+
+<Appear>
+
+#### Putting followers on different machines (brokers) than leaders.
+
+#### If a machine goes down, one of the followers becomes the leader `LeaderElection`.
+
+</Appear>
+
+---
+
+![Distribution](https://www.confluent.io/wp-content/uploads/2016/08/fig41.jpg)
+
+---
+
+## How do we know who's the leader?
+
+<Appear>
+
+#### Decided by special broker called `Controller`.
+
+#### Information stored in Zookeeper `/brokers/topics/[topic]`.
+
+</Appear>
+
+---
+
+## How do we know who's the controller then?
+
+<Appear>
+
+#### The first broker to register itself in Zookeeper under `/controller`.
+
+</Appear>
+
+---
+
+## Failures
+
+<Appear>
+
+#### When a broker fails, new leaders have to be elected.
+
+#### They will be chosen from in-sync replicas.
+
+#### New followers have to be created to satisfy the `replication` factor.
+
+#### When the `Controller` goes down, remaining brokers race to register themselves under `/controller` first.
+
+</Appear>
+
+---
+
+## So we can resiliently process data larger than memory...
+
+<Appear>
+
+#### What about larger than disk?
+
+#### If we keep appending to files, we're going to run out of space quickly.
+
+</Appear>
+
+---
+
+## Deleting data
+
+<Appear>
+
+#### You can't delete arbitrary data
+
+#### `retention.ms` allows for deleting messages older than x.
+
+#### `cleanup.policy=compact` allows for never loosing data, but keeping last n messages per key (database).
+
+#### Handled by `LogCleanerThreads`.
+
+</Appear>
